@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Administrativo - Mapa de Salas</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="header-admin">
+            <h1>Gerenciar Mapa de Salas</h1>
+            <a href="tv.html" target="_blank" class="btn-visualizar">👁️ Ver Tela da TV</a>
+        </div>
+        
+        <label for="turno">Selecione o Turno:</label>
+        <select id="turno">
+            <option value="MANHÃ">Manhã</option>
+            <option value="TARDE">Tarde</option>
+            <option value="NOITE">Noite</option>
+        </select>
+
+        <form id="form-salas">
+            <p><small>Deixe em branco para ocultar a sala na TV</small></p>
+            
+            <h3>Bloco 100</h3>
+            <input type="text" id="s101" placeholder="Prof. Sala 101">
+            <input type="text" id="s102" placeholder="Prof. Sala 102">
+
+            <h3>Bloco 200</h3>
+            <input type="text" id="s201" placeholder="Prof. Sala 201">
+            <input type="text" id="s202" placeholder="Prof. Sala 202">
+            <input type="text" id="s203" placeholder="Prof. Sala 203">
+            <input type="text" id="s204" placeholder="Prof. Sala 204">
+
+            <h3>Bloco 300</h3>
+            <input type="text" id="s301" placeholder="Prof. Sala 301">
+            <input type="text" id="s302" placeholder="Prof. Sala 302">
+            <input type="text" id="s303" placeholder="Prof. Sala 303">
+            <input type="text" id="s304" placeholder="Prof. Sala 304">
+            <input type="text" id="s305" placeholder="Prof. Sala 305">
+
+            <h3>Bloco 400</h3>
+            <input type="text" id="s401" placeholder="Prof. Sala 401">
+            <input type="text" id="s402" placeholder="Prof. Sala 402">
+            <input type="text" id="s403" placeholder="Prof. Sala 403">
+            <input type="text" id="s404" placeholder="Prof. Sala 404">
+            <input type="text" id="s405" placeholder="Prof. Sala 405">
+            <input type="text" id="s406" placeholder="Prof. Sala 406">
+
+            <button type="button" id="btn-save">Atualizar Mapa</button>
+        </form>
+    </div>
+    <script src="js/admin.js"></script>
+</body>
+</html>
