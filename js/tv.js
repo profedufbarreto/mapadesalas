@@ -1,36 +1,31 @@
-const listaSalas = [101, 102, 201, 202, 203, 204, 301, 302, 303, 304, 305, 401, 402, 403, 404, 405, 406];
+const salas = [101, 102, 201, 202, 203, 204, 301, 302, 303, 304, 305, 401, 402, 403, 404, 405, 406];
 
 function atualizarMural() {
     const grid = document.getElementById('grid-tv');
-    const displayTurno = document.getElementById('display-turno');
+    document.getElementById('display-turno').innerText = localStorage.getItem('turno') || "---";
     
-    // Atualiza o Turno
-    displayTurno.innerText = localStorage.getItem('turno') || "NÃO DEFINIDO";
-
     let htmlFinal = "";
 
-    listaSalas.forEach(num => {
-        const nomeProf = localStorage.getItem('s' + num);
-
-        // LÓGICA: Só adiciona o HTML se o campo não estiver vazio
-        if (nomeProf && nomeProf.trim() !== "") {
-            htmlFinal += `
-                <div class="card">
-                    <span class="room-no">SALA ${num}</span>
-                    <div class="prof-name">${nomeProf.toUpperCase()}</div>
-                </div>
-            `;
+    salas.forEach(num => {
+        const dados = localStorage.getItem('s' + num);
+        if (dados) {
+            const [prof, turma] = dados.split('|');
+            if (prof && prof.trim() !== "") {
+                htmlFinal += `
+                    <div class="card">
+                        <div class="card-header">SALA ${num}</div>
+                        <div class="card-body">
+                            <div class="prof-name">${prof.toUpperCase()}</div>
+                            ${turma ? `<div class="class-name">${turma}</div>` : ""}
+                        </div>
+                    </div>
+                `;
+            }
         }
     });
 
-    // Se nenhuma sala tiver aula, mostra um aviso
-    if (htmlFinal === "") {
-        grid.innerHTML = "<h2 style='grid-column: 1/-1; text-align:center;'>Nenhuma aula agendada para este turno.</h2>";
-    } else {
-        grid.innerHTML = htmlFinal;
-    }
+    grid.innerHTML = htmlFinal || "<h2 style='color:gray'>Nenhuma aula agora</h2>";
 }
 
-// Verifica mudanças a cada 2 segundos
-setInterval(atualizarMural, 2000);
+setInterval(atualizarMural, 3000);
 atualizarMural();

@@ -2,54 +2,158 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Administrativo - Mapa de Salas</title>
     <link rel="stylesheet" href="css/admin.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
+
     <div class="admin-container">
-        <div class="header-admin">
-            <h1>Gerenciar Mapa de Salas</h1>
+        <header class="header-admin">
+            <div>
+                <h1>Mapa de Salas</h1>
+                <p>Escola Prof. Barreto</p>
+            </div>
             <a href="tv.html" target="_blank" class="btn-visualizar">👁️ Ver Tela da TV</a>
-        </div>
-        
-        <label for="turno">Selecione o Turno:</label>
-        <select id="turno">
-            <option value="MANHÃ">Manhã</option>
-            <option value="TARDE">Tarde</option>
-            <option value="NOITE">Noite</option>
-        </select>
+        </header>
 
-        <form id="form-salas">
-            <p><small>Deixe em branco para ocultar a sala na TV</small></p>
+        <section class="upload-section">
+            <h3>1. Importar Planilha</h3>
+            <input type="file" id="excel-file" accept=".xlsx, .xls, .csv">
+            <p><small>A planilha deve seguir o modelo (Sala, Professor, Turma).</small></p>
+        </section>
+
+        <hr>
+
+        <section class="config-section">
+            <h3>2. Ajustes Manuais</h3>
             
-            <h3>Bloco 100</h3>
-            <input type="text" id="s101" placeholder="Prof. Sala 101">
-            <input type="text" id="s102" placeholder="Prof. Sala 102">
+            <label for="turno">Turno Atual:</label>
+            <select id="turno">
+                <option value="MANHÃ">Manhã</option>
+                <option value="TARDE">Tarde</option>
+                <option value="NOITE">Noite</option>
+            </select>
 
-            <h3>Bloco 200</h3>
-            <input type="text" id="s201" placeholder="Prof. Sala 201">
-            <input type="text" id="s202" placeholder="Prof. Sala 202">
-            <input type="text" id="s203" placeholder="Prof. Sala 203">
-            <input type="text" id="s204" placeholder="Prof. Sala 204">
+            <form id="form-salas">
+                
+                <div class="bloco">
+                    <h4>Bloco 100</h4>
+                    <div class="input-row">
+                        <div class="sala-group">
+                            <label>Sala 101</label>
+                            <input type="text" id="p101" placeholder="Professor">
+                            <input type="text" id="t101" placeholder="Turma">
+                        </div>
+                        <div class="sala-group">
+                            <label>Sala 102</label>
+                            <input type="text" id="p102" placeholder="Professor">
+                            <input type="text" id="t102" placeholder="Turma">
+                        </div>
+                    </div>
+                </div>
 
-            <h3>Bloco 300</h3>
-            <input type="text" id="s301" placeholder="Prof. Sala 301">
-            <input type="text" id="s302" placeholder="Prof. Sala 302">
-            <input type="text" id="s303" placeholder="Prof. Sala 303">
-            <input type="text" id="s304" placeholder="Prof. Sala 304">
-            <input type="text" id="s305" placeholder="Prof. Sala 305">
+                <div class="bloco">
+                    <h4>Bloco 200</h4>
+                    <div class="input-row">
+                        <div class="sala-group">
+                            <label>Sala 201</label>
+                            <input type="text" id="p201" placeholder="Professor">
+                            <input type="text" id="t201" placeholder="Turma">
+                        </div>
+                        <div class="sala-group">
+                            <label>Sala 202</label>
+                            <input type="text" id="p202" placeholder="Professor">
+                            <input type="text" id="t202" placeholder="Turma">
+                        </div>
+                        <div class="sala-group">
+                            <label>Sala 203</label>
+                            <input type="text" id="p203" placeholder="Professor">
+                            <input type="text" id="t203" placeholder="Turma">
+                        </div>
+                        <div class="sala-group">
+                            <label>Sala 204</label>
+                            <input type="text" id="p204" placeholder="Professor">
+                            <input type="text" id="t204" placeholder="Turma">
+                        </div>
+                    </div>
+                </div>
 
-            <h3>Bloco 400</h3>
-            <input type="text" id="s401" placeholder="Prof. Sala 401">
-            <input type="text" id="s402" placeholder="Prof. Sala 402">
-            <input type="text" id="s403" placeholder="Prof. Sala 403">
-            <input type="text" id="s404" placeholder="Prof. Sala 404">
-            <input type="text" id="s405" placeholder="Prof. Sala 405">
-            <input type="text" id="s406" placeholder="Prof. Sala 406">
+                <div class="bloco">
+                    <h4>Bloco 300</h4>
+                    <div class="input-row">
+                        <div class="sala-group">
+                            <label>Sala 301</label>
+                            <input type="text" id="p301" placeholder="Professor">
+                            <input type="text" id="t301" placeholder="Turma">
+                        </div>
+                        <div class="sala-group">
+                            <label>Sala 302</label>
+                            <input type="text" id="p302" placeholder="Professor">
+                            <input type="text" id="t302" placeholder="Turma">
+                        </div>
+                        <div class="sala-group">
+                            <label>Sala 303</label>
+                            <input type="text" id="p303" placeholder="Professor">
+                            <input type="text" id="t303" placeholder="Turma">
+                        </div>
+                        <div class="sala-group">
+                            <label>Sala 304</label>
+                            <input type="text" id="p304" placeholder="Professor">
+                            <input type="text" id="t304" placeholder="Turma">
+                        </div>
+                        <div class="sala-group">
+                            <label>Sala 305</label>
+                            <input type="text" id="p305" placeholder="Professor">
+                            <input type="text" id="t305" placeholder="Turma">
+                        </div>
+                    </div>
+                </div>
 
-            <button type="button" id="btn-save">Atualizar Mapa</button>
-        </form>
+                <div class="bloco">
+                    <h4>Bloco 400</h4>
+                    <div class="input-row">
+                        <div class="sala-group">
+                            <label>Sala 401</label>
+                            <input type="text" id="p401" placeholder="Professor">
+                            <input type="text" id="t401" placeholder="Turma">
+                        </div>
+                        <div class="sala-group">
+                            <label>Sala 402</label>
+                            <input type="text" id="p402" placeholder="Professor">
+                            <input type="text" id="t402" placeholder="Turma">
+                        </div>
+                        <div class="sala-group">
+                            <label>Sala 403</label>
+                            <input type="text" id="p403" placeholder="Professor">
+                            <input type="text" id="t403" placeholder="Turma">
+                        </div>
+                        <div class="sala-group">
+                            <label>Sala 404</label>
+                            <input type="text" id="p404" placeholder="Professor">
+                            <input type="text" id="t404" placeholder="Turma">
+                        </div>
+                        <div class="sala-group">
+                            <label>Sala 405</label>
+                            <input type="text" id="p405" placeholder="Professor">
+                            <input type="text" id="t405" placeholder="Turma">
+                        </div>
+                        <div class="sala-group">
+                            <label>Sala 406</label>
+                            <input type="text" id="p406" placeholder="Professor">
+                            <input type="text" id="t406" placeholder="Turma">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" id="btn-save">🚀 ATUALIZAR MAPA NA TV</button>
+            </form>
+        </section>
+        
+        <p id="message" style="text-align: center; font-weight: bold; margin-top: 15px;"></p>
     </div>
+
     <script src="js/admin.js"></script>
 </body>
 </html>
