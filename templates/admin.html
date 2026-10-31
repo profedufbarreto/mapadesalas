@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Gestão{% endblock %}
+
+{% block content %}
+<h2 class="page-title">✏️ Gestão — {{ dia_atual }}</h2>
+
+{% for turno in turnos %}
+<section class="shift-section open">
+    <div class="shift-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="shift-badge shift-{{ turno.key }}">{{ turno.label }}</span>
+        <span class="shift-time">{{ turno.horario }}</span>
+        <span class="shift-arrow">▼</span>
+    </div>
+    <div class="shift-body">
+
+        <!-- Formulário de cadastro -->
+        <form class="admin-form" method="POST" action="{{ url_for('adicionar_aula') }}">
+            <h3>+ Adicionar aula</h3>
+            <input type="hidden" name="dia_semana" value="{{ dia_atual }}">
+            <input type="hidden" name="turno" value="{{ turno.key }}">
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="turma-{{ turno.key }}">Turma (4 dígitos)</label>
+                    <input type="text" id="turma-{{ turno.key }}" name="turma"
+                           maxlength="4" pattern="\d{4}" placeholder="2401" required>
+                </div>
+                <div class="form-field">
+                    <label for="prof-{{ turno.key }}">Professor</label>
+                    <input type="text" id="prof-{{ turno.key }}" name="professor"
+                           placeholder="Nome do professor" required>
+                </div>
+                <div class="form-field">
+                    <label for="curso-{{ turno.key }}">Curso</label>
+                    <input type="text" id="curso-{{ turno.key }}" name="curso"
+                           placeholder="Nome do curso" required>
+                </div>
+                <div class="form-field">
+                    <label for="sala-{{ turno.key }}">Sala</label>
+                    <input type="text" id="sala-{{ turno.key }}" name="sala"
+                           placeholder="Lab 01" required>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Adicionar</button>
+            </div>
+        </form>
+
+        <!-- Tabela de aulas -->
+        {% set aulas = aulas_por_turno[turno.key] %}
+        {% if aulas %}
+        <div class="table-wrap">
+            <table class="room-table">
+                <thead>
+                    <tr>
+                        <th>Turma</th>
+                        <th>Professor</th>
+                        <th>Curso</th>
+                        <th>Sala</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aula in aulas %}
+                    <tr>
+                        <td class="turma-cell">{{ aula.turma }}</td>
+                        <td>{{ aula.professor }}</td>
+                        <td>{{ aula.curso }}</td>
+                        <td class="sala-cell">{{ aula.sala }}</td>
+                        <td>
+                            <form method="POST"
+                                  action="{{ url_for('remover_aula', aula_id=aula.id) }}"
+                                  style="display:inline"
+                                  onsubmit="return confirm('Remover turma {{ aula.turma }}?')">
+                                <button type="submit" class="del-btn" title="Remover">✕</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty-msg">Nenhuma aula cadastrada neste turno.</p>
+        {% endif %}
+    </div>
+</section>
+{% endfor %}
+{% endblock %}

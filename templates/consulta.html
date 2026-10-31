@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Consulta{% endblock %}
+
+{% block content %}
+<h2 class="page-title">📋 {{ dia_atual }}</h2>
+
+{% for turno in turnos %}
+<section class="shift-section">
+    <div class="shift-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="shift-badge shift-{{ turno.key }}">{{ turno.label }}</span>
+        <span class="shift-time">{{ turno.horario }}</span>
+        <span class="shift-arrow">▼</span>
+    </div>
+    <div class="shift-body">
+        {% set aulas = aulas_por_turno[turno.key] %}
+        {% if aulas %}
+        <div class="table-wrap">
+            <table class="room-table">
+                <thead>
+                    <tr>
+                        <th>Turma</th>
+                        <th>Professor</th>
+                        <th>Curso</th>
+                        <th>Sala</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aula in aulas %}
+                    <tr>
+                        <td class="turma-cell">{{ aula.turma }}</td>
+                        <td>{{ aula.professor }}</td>
+                        <td>{{ aula.curso }}</td>
+                        <td class="sala-cell">{{ aula.sala }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty-msg">Nenhuma aula cadastrada neste turno.</p>
+        {% endif %}
+    </div>
+</section>
+{% endfor %}
+
+<script>
+    // Abrir turnos que têm aulas
+    document.querySelectorAll('.shift-section').forEach(sec => {
+        if (sec.querySelector('.room-table')) sec.classList.add('open');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mapa de Salas{% endblock %} — Senac NH</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-left">
+            <h1 class="logo">MAPA DE SALAS</h1>
+            <span class="logo-sub">Senac Novo Hamburgo</span>
+        </div>
+        <nav class="header-nav">
+            <a href="{{ url_for('consulta') }}"
+               class="nav-btn {% if request.endpoint == 'consulta' %}active{% endif %}">
+                👁 Consulta
+            </a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('admin') }}"
+                   class="nav-btn {% if request.endpoint == 'admin' %}active{% endif %}">
+                    ✏️ Gestão
+                </a>
+                <a href="{{ url_for('logout') }}" class="nav-btn nav-logout">Sair</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="nav-btn">🔒 Login</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-container">
+        {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Day tabs -->
+    <div class="day-tabs">
+        {% for dia in dias %}
+        <a href="?dia={{ dia }}"
+           class="day-tab {% if dia == dia_atual %}active{% endif %}">
+            {{ dia.replace('-feira', '') }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>Senac Novo Hamburgo — Mapa de Salas {{ now().year if now is defined else "2026" }}</p>
+    </footer>
+
+</body>
+</html>
