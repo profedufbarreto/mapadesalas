@@ -1,32 +1,48 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from flask_login import (
-    LoginManager,
-    login_user,
-    logout_user,
-    login_required,
-    current_user,
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+from functools import wraps
+from datetime import datetime
+from models import (
+    init_db,
+    buscar_usuario_por_email,
+    buscar_usuario_por_id,
+    verificar_senha,
+    listar_aulas,
+    adicionar_aula as db_adicionar_aula,
+    remover_aula as db_remover_aula,
 )
-from config import Config
-from models import db, Usuario, Aula
 
 # ---------------------------------------------------------------------------
-# App factory
+# App
 # ---------------------------------------------------------------------------
 
 app = Flask(__name__)
-app.config.from_object(Config)
+app.secret_key = "chave-temporaria-trocar-em-producao"
 
-db.init_app(app)
-
-login_manager = LoginManager()
-login_manager.login_view = "login"
-login_manager.login_message = "Faça login para acessar a área de gestão."
-login_manager.init_app(app)
+# Cria tabelas ao iniciar
+init_db()
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return Usuario.query.get(int(user_id))
+# ---------------------------------------------------------------------------
+# Autenticação simples via session (sem Flask-Login)
+# ---------------------------------------------------------------------------
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "user_id" not in session:
+            flash("Faça login para acessar a área de gestão.", "error")
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated
+
+
+@app.context_processor
+def inject_user():
+    """Disponibiliza 'usuario_logado' em todos os templates."""
+    user = None
+    if "user_id" in session:
+        user = buscar_usuario_por_id(session["user_id"])
+    return {"usuario_logado": user}
 
 
 # ---------------------------------------------------------------------------
@@ -53,21 +69,29 @@ TURNOS = [
 # Rotas - Consulta (público)
 # ---------------------------------------------------------------------------
 
+def dia_da_semana_atual():
+    """Retorna o dia da semana atual em português."""
+    dias_py = {
+        0: "Segunda-feira",
+        1: "Terça-feira",
+        2: "Quarta-feira",
+        3: "Quinta-feira",
+        4: "Sexta-feira",
+        5: "Sábado",
+        6: "Sábado",  # domingo mostra sábado
+    }
+    return dias_py[datetime.now().weekday()]
+
 
 @app.route("/")
 def consulta():
-    """Página pública — alunos consultam o mapa de salas."""
-    dia = request.args.get("dia", "Segunda-feira")
+    dia = request.args.get("dia", dia_da_semana_atual())
     if dia not in DIAS:
         dia = "Segunda-feira"
 
     aulas_por_turno = {}
     for turno in TURNOS:
-        aulas_por_turno[turno["key"]] = (
-            Aula.query.filter_by(dia_semana=dia, turno=turno["key"])
-            .order_by(Aula.sala, Aula.turma)
-            .all()
-        )
+        aulas_por_turno[turno["key"]] = listar_aulas(dia, turno["key"])
 
     return render_template(
         "consulta.html",
@@ -82,21 +106,20 @@ def consulta():
 # Rotas - Autenticação
 # ---------------------------------------------------------------------------
 
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    if current_user.is_authenticated:
+    if "user_id" in session:
         return redirect(url_for("admin"))
 
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         senha = request.form.get("senha", "")
-        usuario = Usuario.query.filter_by(email=email).first()
+        usuario = buscar_usuario_por_email(email)
 
-        if usuario and usuario.check_senha(senha):
-            login_user(usuario)
-            proximo = request.args.get("next")
-            return redirect(proximo or url_for("admin"))
+        if usuario and verificar_senha(usuario, senha):
+            session["user_id"] = usuario["id"]
+            session["user_nome"] = usuario["nome"]
+            return redirect(url_for("admin"))
 
         flash("E-mail ou senha incorretos.", "error")
 
@@ -104,9 +127,8 @@ def login():
 
 
 @app.route("/logout")
-@login_required
 def logout():
-    logout_user()
+    session.clear()
     return redirect(url_for("consulta"))
 
 
@@ -114,22 +136,16 @@ def logout():
 # Rotas - Admin (protegidas)
 # ---------------------------------------------------------------------------
 
-
 @app.route("/admin")
 @login_required
 def admin():
-    """Painel de gestão — cadastrar/remover aulas."""
     dia = request.args.get("dia", "Segunda-feira")
     if dia not in DIAS:
         dia = "Segunda-feira"
 
     aulas_por_turno = {}
     for turno in TURNOS:
-        aulas_por_turno[turno["key"]] = (
-            Aula.query.filter_by(dia_semana=dia, turno=turno["key"])
-            .order_by(Aula.sala, Aula.turma)
-            .all()
-        )
+        aulas_por_turno[turno["key"]] = listar_aulas(dia, turno["key"])
 
     return render_template(
         "admin.html",
@@ -150,7 +166,6 @@ def adicionar_aula():
     curso = request.form.get("curso", "").strip()
     sala = request.form.get("sala", "").strip()
 
-    # Validação simples
     if not all([dia, turno, turma, professor, curso, sala]):
         flash("Todos os campos são obrigatórios.", "error")
         return redirect(url_for("admin", dia=dia))
@@ -159,28 +174,15 @@ def adicionar_aula():
         flash("A turma deve ter exatamente 4 dígitos.", "error")
         return redirect(url_for("admin", dia=dia))
 
-    aula = Aula(
-        dia_semana=dia,
-        turno=turno,
-        turma=turma,
-        professor=professor,
-        curso=curso,
-        sala=sala,
-    )
-    db.session.add(aula)
-    db.session.commit()
-
+    db_adicionar_aula(dia, turno, turma, professor, curso, sala)
     flash(f"Aula da turma {turma} adicionada com sucesso!", "success")
     return redirect(url_for("admin", dia=dia))
 
 
 @app.route("/admin/remover/<int:aula_id>", methods=["POST"])
 @login_required
-def remover_aula(aula_id):
-    aula = Aula.query.get_or_404(aula_id)
-    dia = aula.dia_semana
-    db.session.delete(aula)
-    db.session.commit()
+def remover_aula_route(aula_id):
+    dia = db_remover_aula(aula_id)
     flash("Aula removida.", "success")
     return redirect(url_for("admin", dia=dia))
 
@@ -188,9 +190,6 @@ def remover_aula(aula_id):
 # ---------------------------------------------------------------------------
 # Inicialização
 # ---------------------------------------------------------------------------
-
-with app.app_context():
-    db.create_all()
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

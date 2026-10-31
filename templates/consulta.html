@@ -3,14 +3,14 @@
 {% block title %}Consulta{% endblock %}
 
 {% block content %}
-<h2 class="page-title">📋 {{ dia_atual }}</h2>
+<h2 class="page-title">{{ dia_atual }}</h2>
 
 {% for turno in turnos %}
-<section class="shift-section">
+<section class="shift-section" data-turno="{{ turno.key }}">
     <div class="shift-header" onclick="this.parentElement.classList.toggle('open')">
         <span class="shift-badge shift-{{ turno.key }}">{{ turno.label }}</span>
         <span class="shift-time">{{ turno.horario }}</span>
-        <span class="shift-arrow">▼</span>
+        <span class="shift-arrow">&#9660;</span>
     </div>
     <div class="shift-body">
         {% set aulas = aulas_por_turno[turno.key] %}
@@ -45,9 +45,37 @@
 {% endfor %}
 
 <script>
-    // Abrir turnos que têm aulas
-    document.querySelectorAll('.shift-section').forEach(sec => {
-        if (sec.querySelector('.room-table')) sec.classList.add('open');
+    // Detecta o turno atual pela hora
+    var hora = new Date().getHours();
+    var minutos = new Date().getMinutes();
+    var turnoAtual;
+
+    if (hora >= 7 && (hora < 12 || (hora === 12 && minutos === 0))) {
+        turnoAtual = 'manha';
+    } else if (hora >= 13 && hora < 18) {
+        turnoAtual = 'tarde';
+    } else if (hora >= 18 && (hora < 22 || (hora === 22 && minutos === 0))) {
+        turnoAtual = 'noite';
+    }
+
+    var abriuAtual = false;
+
+    document.querySelectorAll('.shift-section').forEach(function(sec) {
+        var turno = sec.getAttribute('data-turno');
+        // Se estamos no turno atual, abre ele primeiro
+        if (turno === turnoAtual) {
+            sec.classList.add('open');
+            abriuAtual = true;
+            // Scroll suave ate o turno atual
+            sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     });
+
+    // Se nenhum turno atual (fora de horario), abre os que tem aulas
+    if (!abriuAtual) {
+        document.querySelectorAll('.shift-section').forEach(function(sec) {
+            if (sec.querySelector('.room-table')) sec.classList.add('open');
+        });
+    }
 </script>
 {% endblock %}
